@@ -1,6 +1,6 @@
 # Aromas del Alma - Sistema de Gestión
 
-![Build Status](https://app.travis-ci.com/rortizse-star/aromas-del-alma.svg?token=7rq8B1MC14sXts9hssss&branch=main)
+![Build Status] (https://app.travis-ci.com/rortizse-star/aromas-del-alma.svg?token=7rq8B1MC14sXts9hssss)
 ![Coverage](https://img.shields.io/badge/coverage-65%25-green)
 ![Version](https://img.shields.io/badge/version-1.0.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
