@@ -1,11 +1,17 @@
 package com.aromas.aromas_del_alma.controller;
 
+import com.aromas.aromas_del_alma.dto.VentaTemporal;
 import com.aromas.aromas_del_alma.model.Producto;
 import com.aromas.aromas_del_alma.service.ProductoService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Controller
 public class VentaController {
@@ -13,80 +19,103 @@ public class VentaController {
     @Autowired
     private ProductoService productoService;
 
-    // Página principal (búsqueda de productos)
+    // Página principal (carrito de venta)
     @GetMapping("/")
-    public String mostrarPaginaPrincipal() {
-        return "venta";
-    }
-    // Aplicar descuento y recalcular totales
-    @PostMapping("/aplicar-descuento")
-    public String aplicarDescuento(
-            @RequestParam String codigoBarras,
-            @RequestParam int cantidad,
-            @RequestParam double descuentoPorcentaje,
-            Model model) {
-
-        var producto = productoService.buscarPorCodigoBarras(codigoBarras);
-        if (producto.isPresent()) {
-            Producto p = producto.get();
-            double totalOriginal = p.getPrecio() * cantidad;
-            double totalConDescuento = totalOriginal;
-
-            if (descuentoPorcentaje > 0 && descuentoPorcentaje <= 100) {
-                totalConDescuento = totalOriginal * (1 - descuentoPorcentaje / 100);
-            }
-
-            model.addAttribute("producto", p);
-            model.addAttribute("cantidad", cantidad);
-            model.addAttribute("descuentoPorcentaje", descuentoPorcentaje);
-            model.addAttribute("totalOriginal", totalOriginal);
-            model.addAttribute("totalConDescuento", totalConDescuento);
-        } else {
-            model.addAttribute("error", "Producto no encontrado.");
+    public String mostrarCarrito(HttpSession session, Model model) {
+        @SuppressWarnings("unchecked")
+        List<VentaTemporal> productosEnCarrito = (List<VentaTemporal>) session.getAttribute("carrito");
+        if (productosEnCarrito == null) {
+            productosEnCarrito = new ArrayList<>();
+            session.setAttribute("carrito", productosEnCarrito);
         }
+
+        double total = productosEnCarrito.stream().mapToDouble(VentaTemporal::getSubtotal).sum();
+        model.addAttribute("productosEnCarrito", productosEnCarrito);
+        model.addAttribute("totalGeneral", total);
         return "venta";
     }
 
-    // Buscar producto por código de barras
-    @PostMapping("/buscar")
-    public String buscarProducto(
+    // Agregar producto al carrito
+    @PostMapping("/agregar-al-carrito")
+    public String agregarAlCarrito(
             @RequestParam String codigoBarras,
             @RequestParam(defaultValue = "1") int cantidad,
-            @RequestParam(defaultValue = "0.0") double descuentoPorcentaje,
+            HttpSession session,
             Model model) {
 
-        var producto = productoService.buscarPorCodigoBarras(codigoBarras);
-        if (producto.isPresent()) {
-            Producto p = producto.get();
-            double totalOriginal = p.getPrecio() * cantidad;
-            double totalConDescuento = totalOriginal;
+        Optional<Producto> productoOpt = productoService.buscarPorCodigoBarras(codigoBarras);
+        if (productoOpt.isPresent()) {
+            Producto producto = productoOpt.get();
+            if (producto.getStock() >= cantidad) {
+                VentaTemporal item = new VentaTemporal(producto, cantidad);
 
-            // Aplica descuento solo si es válido (0-100)
-            if (descuentoPorcentaje > 0 && descuentoPorcentaje <= 100) {
-                totalConDescuento = totalOriginal * (1 - descuentoPorcentaje / 100);
+                @SuppressWarnings("unchecked")
+                List<VentaTemporal> carrito = (List<VentaTemporal>) session.getAttribute("carrito");
+                if (carrito == null) {
+                    carrito = new ArrayList<>();
+                    session.setAttribute("carrito", carrito);
+                }
+                carrito.add(item);
+            } else {
+                model.addAttribute("error", "Stock insuficiente para " + producto.getNombre());
             }
-
-            model.addAttribute("producto", p);
-            model.addAttribute("cantidad", cantidad);
-            model.addAttribute("descuentoPorcentaje", descuentoPorcentaje);
-            model.addAttribute("totalOriginal", totalOriginal);
-            model.addAttribute("totalConDescuento", totalConDescuento);
         } else {
-            model.addAttribute("error", "Producto no encontrado. Por favor, verifica el código.");
+            model.addAttribute("error", "Producto no encontrado con código: " + codigoBarras);
         }
-        return "venta";
+        return "redirect:/";
+    }
+
+    // Eliminar producto del carrito
+    @GetMapping("/eliminar-del-carrito")
+    public String eliminarDelCarrito(@RequestParam int indice, HttpSession session) {
+        @SuppressWarnings("unchecked")
+        List<VentaTemporal> carrito = (List<VentaTemporal>) session.getAttribute("carrito");
+        if (carrito != null && indice >= 0 && indice < carrito.size()) {
+            carrito.remove(indice);
+        }
+        return "redirect:/";
+    }
+
+    // Confirmar venta completa
+    @PostMapping("/confirmar-venta")
+    public String confirmarVenta(HttpSession session, Model model) {
+        @SuppressWarnings("unchecked")
+        List<VentaTemporal> carrito = (List<VentaTemporal>) session.getAttribute("carrito");
+        if (carrito == null || carrito.isEmpty()) {
+            model.addAttribute("error", "No hay productos para vender.");
+            return "redirect:/";
+        }
+
+        // Verificar stock de todos los productos
+        for (VentaTemporal item : carrito) {
+            Optional<Producto> productoOpt = productoService.buscarPorCodigoBarras(item.getProducto().getCodigoBarras());
+            if (productoOpt.isEmpty() || productoOpt.get().getStock() < item.getCantidad()) {
+                model.addAttribute("error", "Stock insuficiente o producto eliminado.");
+                return "redirect:/";
+            }
+        }
+
+        // Realizar las ventas
+        for (VentaTemporal item : carrito) {
+            productoService.realizarVenta(item.getProducto().getCodigoBarras(), item.getCantidad());
+        }
+
+        // Limpiar carrito
+        session.removeAttribute("carrito");
+        model.addAttribute("mensaje", "¡Venta completada con éxito!");
+        return "redirect:/";
     }
 
     // Formulario para agregar nuevo producto
     @GetMapping("/agregar-producto")
     public String mostrarFormularioAgregar(Model model) {
         model.addAttribute("producto", new Producto());
-        return "agregar-producto"; // ← Nombre del archivo HTML SIN extensión
+        return "agregar-producto";
     }
+
     // Guardar nuevo producto
     @PostMapping("/guardar-producto")
     public String guardarProducto(@ModelAttribute Producto producto, Model model) {
-        // Establecer valores predeterminados si son nulos
         if (producto.getStock() == null) producto.setStock(0);
         if (producto.getPrecio() == null) producto.setPrecio(0.0);
         productoService.guardarProducto(producto);
@@ -94,21 +123,6 @@ public class VentaController {
         return "agregar-producto";
     }
 
-    // Realizar venta
-    @PostMapping("/vender")
-    public String realizarVenta(
-            @RequestParam String codigoBarras,
-            @RequestParam(defaultValue = "1") int cantidad,
-            Model model) {
-
-        boolean exito = productoService.realizarVenta(codigoBarras, cantidad);
-        if (exito) {
-            model.addAttribute("mensaje", "¡Venta realizada con éxito!");
-        } else {
-            model.addAttribute("error", "Stock insuficiente o producto no encontrado.");
-        }
-        return "redirect:/";
-    }
     // Mostrar formulario de edición
     @GetMapping("/editar-producto")
     public String mostrarFormularioEdicion(@RequestParam String codigoBarras, Model model) {
