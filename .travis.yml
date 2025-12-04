@@ -1,0 +1,18 @@
+# .travis.yml
+language: java
+jdk:
+  - openjdk17
+
+services:
+  - mysql
+
+before_script:
+  - mysql -e 'CREATE DATABASE IF NOT EXISTS aromas_del_alma CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
+
+script:
+  - mvn clean test
+
+branches:
+  only:
+    - main
+    - masterql -e 'CREATE DATABASE IF NOT EXISTS testdb;'
