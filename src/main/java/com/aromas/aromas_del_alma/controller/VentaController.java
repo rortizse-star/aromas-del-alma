@@ -43,24 +43,29 @@ public class VentaController {
             HttpSession session,
             Model model) {
 
-        Optional<Producto> productoOpt = productoService.buscarPorCodigoBarras(codigoBarras);
-        if (productoOpt.isPresent()) {
-            Producto producto = productoOpt.get();
-            if (producto.getStock() >= cantidad) {
-                VentaTemporal item = new VentaTemporal(producto, cantidad);
+        try {
+            Optional<Producto> productoOpt = productoService.buscarPorCodigoBarras(codigoBarras);
+            if (productoOpt.isPresent()) {
+                Producto producto = productoOpt.get();
+                if (producto.getStock() >= cantidad) {
+                    VentaTemporal item = new VentaTemporal(producto, cantidad);
 
-                @SuppressWarnings("unchecked")
-                List<VentaTemporal> carrito = (List<VentaTemporal>) session.getAttribute("carrito");
-                if (carrito == null) {
-                    carrito = new ArrayList<>();
-                    session.setAttribute("carrito", carrito);
+                    @SuppressWarnings("unchecked")
+                    List<VentaTemporal> carrito = (List<VentaTemporal>) session.getAttribute("carrito");
+                    if (carrito == null) {
+                        carrito = new ArrayList<>();
+                        session.setAttribute("carrito", carrito);
+                    }
+                    carrito.add(item);
+                } else {
+                    model.addAttribute("error", "Stock insuficiente para: " + producto.getNombre());
                 }
-                carrito.add(item);
             } else {
-                model.addAttribute("error", "Stock insuficiente para " + producto.getNombre());
+                model.addAttribute("error", "Producto no encontrado con código: " + codigoBarras);
             }
-        } else {
-            model.addAttribute("error", "Producto no encontrado con código: " + codigoBarras);
+        } catch (Exception e) {
+            model.addAttribute("error", "Error al agregar el producto: " + e.getMessage());
+            e.printStackTrace();
         }
         return "redirect:/";
     }
@@ -68,10 +73,14 @@ public class VentaController {
     // Eliminar producto del carrito
     @GetMapping("/eliminar-del-carrito")
     public String eliminarDelCarrito(@RequestParam int indice, HttpSession session) {
-        @SuppressWarnings("unchecked")
-        List<VentaTemporal> carrito = (List<VentaTemporal>) session.getAttribute("carrito");
-        if (carrito != null && indice >= 0 && indice < carrito.size()) {
-            carrito.remove(indice);
+        try {
+            @SuppressWarnings("unchecked")
+            List<VentaTemporal> carrito = (List<VentaTemporal>) session.getAttribute("carrito");
+            if (carrito != null && indice >= 0 && indice < carrito.size()) {
+                carrito.remove(indice);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return "redirect:/";
     }
@@ -79,30 +88,35 @@ public class VentaController {
     // Confirmar venta completa
     @PostMapping("/confirmar-venta")
     public String confirmarVenta(HttpSession session, Model model) {
-        @SuppressWarnings("unchecked")
-        List<VentaTemporal> carrito = (List<VentaTemporal>) session.getAttribute("carrito");
-        if (carrito == null || carrito.isEmpty()) {
-            model.addAttribute("error", "No hay productos para vender.");
-            return "redirect:/";
-        }
-
-        // Verificar stock de todos los productos
-        for (VentaTemporal item : carrito) {
-            Optional<Producto> productoOpt = productoService.buscarPorCodigoBarras(item.getProducto().getCodigoBarras());
-            if (productoOpt.isEmpty() || productoOpt.get().getStock() < item.getCantidad()) {
-                model.addAttribute("error", "Stock insuficiente o producto eliminado.");
+        try {
+            @SuppressWarnings("unchecked")
+            List<VentaTemporal> carrito = (List<VentaTemporal>) session.getAttribute("carrito");
+            if (carrito == null || carrito.isEmpty()) {
+                model.addAttribute("error", "No hay productos para vender.");
                 return "redirect:/";
             }
-        }
 
-        // Realizar las ventas
-        for (VentaTemporal item : carrito) {
-            productoService.realizarVenta(item.getProducto().getCodigoBarras(), item.getCantidad());
-        }
+            // Verificar stock de todos los productos
+            for (VentaTemporal item : carrito) {
+                Optional<Producto> productoOpt = productoService.buscarPorCodigoBarras(item.getProducto().getCodigoBarras());
+                if (productoOpt.isEmpty() || productoOpt.get().getStock() < item.getCantidad()) {
+                    model.addAttribute("error", "Stock insuficiente o producto eliminado.");
+                    return "redirect:/";
+                }
+            }
 
-        // Limpiar carrito
-        session.removeAttribute("carrito");
-        model.addAttribute("mensaje", "¡Venta completada con éxito!");
+            // Realizar las ventas
+            for (VentaTemporal item : carrito) {
+                productoService.realizarVenta(item.getProducto().getCodigoBarras(), item.getCantidad());
+            }
+
+            // Limpiar carrito
+            session.removeAttribute("carrito");
+            model.addAttribute("mensaje", "¡Venta completada con éxito!");
+        } catch (Exception e) {
+            model.addAttribute("error", "Error al confirmar la venta: " + e.getMessage());
+            e.printStackTrace();
+        }
         return "redirect:/";
     }
 
@@ -116,31 +130,46 @@ public class VentaController {
     // Guardar nuevo producto
     @PostMapping("/guardar-producto")
     public String guardarProducto(@ModelAttribute Producto producto, Model model) {
-        if (producto.getStock() == null) producto.setStock(0);
-        if (producto.getPrecio() == null) producto.setPrecio(0.0);
-        productoService.guardarProducto(producto);
-        model.addAttribute("mensaje", "¡Producto agregado con éxito!");
+        try {
+            if (producto.getStock() == null) producto.setStock(0);
+            if (producto.getPrecio() == null) producto.setPrecio(0.0);
+            productoService.guardarProducto(producto);
+            model.addAttribute("mensaje", "¡Producto agregado con éxito!");
+        } catch (Exception e) {
+            model.addAttribute("error", "Error al guardar el producto: " + e.getMessage());
+            e.printStackTrace();
+        }
         return "agregar-producto";
     }
 
     // Mostrar formulario de edición
     @GetMapping("/editar-producto")
     public String mostrarFormularioEdicion(@RequestParam String codigoBarras, Model model) {
-        var producto = productoService.buscarPorCodigoBarras(codigoBarras);
-        if (producto.isPresent()) {
-            model.addAttribute("producto", producto.get());
-            return "editar-producto";
-        } else {
-            model.addAttribute("error", "Producto no encontrado.");
-            return "venta";
+        try {
+            var producto = productoService.buscarPorCodigoBarras(codigoBarras);
+            if (producto.isPresent()) {
+                model.addAttribute("producto", producto.get());
+                return "editar-producto";
+            } else {
+                model.addAttribute("error", "Producto no encontrado.");
+            }
+        } catch (Exception e) {
+            model.addAttribute("error", "Error al cargar el producto: " + e.getMessage());
+            e.printStackTrace();
         }
+        return "redirect:/";
     }
 
     // Guardar cambios del producto
     @PostMapping("/actualizar-producto")
     public String actualizarProducto(@ModelAttribute Producto producto, Model model) {
-        productoService.guardarProducto(producto);
-        model.addAttribute("mensaje", "¡Producto actualizado con éxito!");
+        try {
+            productoService.guardarProducto(producto);
+            model.addAttribute("mensaje", "¡Producto actualizado con éxito!");
+        } catch (Exception e) {
+            model.addAttribute("error", "Error al actualizar el producto: " + e.getMessage());
+            e.printStackTrace();
+        }
         return "editar-producto";
     }
 }

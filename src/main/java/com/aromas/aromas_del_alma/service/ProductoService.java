@@ -14,10 +14,12 @@ public class ProductoService {
     @Autowired
     private ProductoRepository productoRepository;
 
+    // Busca un producto por su código de barras
     public Optional<Producto> buscarPorCodigoBarras(String codigoBarras) {
         return productoRepository.findByCodigoBarras(codigoBarras);
     }
 
+    // Realiza una venta: reduce el stock
     @Transactional
     public boolean realizarVenta(String codigoBarras, int cantidad) {
         Optional<Producto> productoOpt = productoRepository.findByCodigoBarras(codigoBarras);
@@ -32,7 +34,7 @@ public class ProductoService {
         return false;
     }
 
-    // Guarda un nuevo producto o actualiza uno existente
+    // Guarda o actualiza un producto
     public void guardarProducto(Producto producto) {
         productoRepository.save(producto);
     }

@@ -80,6 +80,7 @@
 
     <!-- Mensaje de éxito -->
     <div th:if="${mensaje}" class="alert" th:text="${mensaje}"></div>
+    <div th:if="${error}" class="alert" style="background-color: #f8d7da; color: #721c24;" th:text="${error}"></div>
 
     <!-- Formulario para editar producto -->
     <form method="post" th:action="@{/actualizar-producto}" th:object="${producto}">
