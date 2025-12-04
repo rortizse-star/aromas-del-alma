@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Aromas del Alma - Punto de Venta</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f4eb;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #5a4a42;
+            margin-bottom: 25px;
+        }
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .btn-primary {
+            background-color: #8c6d54;
+            color: white;
+        }
+        .btn-success {
+            background-color: #2e7d32;
+            color: white;
+        }
+        .btn-discount {
+            background-color: #1976d2;
+            color: white;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .info-box {
+            background-color: #f0f8f4;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 6px;
+        }
+        .alert {
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #555;
+        }
+        .totals {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        .total-original {
+            color: #666;
+            text-decoration: line-through;
+            margin: 5px 0;
+        }
+        .total-discounted {
+            font-size: 20px;
+            color: #2e7d32;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .discount-section {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .nav {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .nav a {
+            color: #8c6d54;
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="nav">
+        <a href="/agregar-producto">➕ Agregar Nuevo Producto</a>
+    </div>
+    <h1>✨ Aromas del Alma ✨</h1>
+
+    <!-- Mensajes de éxito o error -->
+    <div th:if="${mensaje}" class="alert success" th:text="${mensaje}"></div>
+    <div th:if="${error}" class="alert error" th:text="${error}"></div>
+
+    <!-- Formulario para buscar producto por código de barras -->
+    <form method="post" th:action="@{/buscar}" id="searchForm">
+        <label for="codigoBarras">🔍 Escanea o escribe el código de barras:</label>
+        <input type="text" id="codigoBarras" name="codigoBarras" placeholder="Ej: 1001" required autofocus />
+
+        <label for="cantidad">Cantidad:</label>
+        <input type="number" id="cantidad" name="cantidad" value="1" min="1" />
+
+        <button type="submit" class="btn-primary">Buscar Producto</button>
+    </form>
+
+    <!-- Información del producto (si se encontró) -->
+    <div th:if="${producto}" class="info-box">
+        <h3 th:text="${producto.nombre}"></h3>
+        <p><strong>Uso / Descripción:</strong></p>
+        <div style="background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 6px; padding: 12px; min-height: 120px; white-space: pre-wrap; font-family: Arial, sans-serif;">
+            <span th:text="${producto.descripcion}"></span>
+        </div>
+        <p><strong>Precio unitario:</strong> $<span th:text="${#numbers.formatDecimal(producto.precio, 1, 2)}"></span></p>
+        <p><strong>Stock disponible:</strong> <span th:text="${producto.stock}"></span> unidades</p>
+        <!-- Botón de edición -->
+        <form method="get" th:action="@{/editar-producto}" style="margin: 10px 0;">
+            <input type="hidden" name="codigoBarras" th:value="${producto.codigoBarras}" />
+            <button type="submit" style="background-color: #1976d2; width: auto; padding: 8px 16px; font-size: 14px;">
+                ✏️ Editar Producto
+            </button>
+        </form>
+
+        <!-- Totales -->
+        <div class="totals">
+            <p><strong>Cantidad:</strong> <span th:text="${cantidad}"></span></p>
+            <p class="total-original">Total original: $<span th:text="${#numbers.formatDecimal(totalOriginal, 1, 2)}"></span></p>
+
+            <!-- Sección de descuento (abajo) -->
+            <div class="discount-section">
+                <label for="descuentoInput">Aplicar descuento (%):</label>
+                <input type="number" id="descuentoInput" name="descuentoPorcentaje"
+                       value="0" min="0" max="100" placeholder="Ej: 15" />
+
+                <form method="post" th:action="@{/aplicar-descuento}" style="margin-top: 10px;">
+                    <input type="hidden" name="codigoBarras" th:value="${producto.codigoBarras}" />
+                    <input type="hidden" name="cantidad" th:value="${cantidad}" />
+                    <input type="hidden" name="descuentoPorcentaje" id="descuentoHidden" />
+                    <button type="button" class="btn-discount"
+                            onclick="aplicarDescuento()">Aplicar Descuento</button>
+                </form>
+            </div>
+
+            <!-- Total con descuento -->
+            <div th:if="${descuentoPorcentaje > 0}">
+                <p><strong>Descuento aplicado:</strong> <span th:text="${descuentoPorcentaje}"></span>%</p>
+                <p class="total-discounted">Total a pagar: $<span th:text="${#numbers.formatDecimal(totalConDescuento, 1, 2)}"></span></p>
+            </div>
+            <div th:unless="${descuentoPorcentaje > 0}">
+                <p class="total-discounted">Total a pagar: $<span th:text="${#numbers.formatDecimal(totalOriginal, 1, 2)}"></span></p>
+            </div>
+        </div>
+
+        <!-- Formulario para realizar venta -->
+        <form method="post" th:action="@{/vender}" style="margin-top: 15px;">
+            <input type="hidden" name="codigoBarras" th:value="${producto.codigoBarras}" />
+            <input type="hidden" name="cantidad" th:value="${cantidad}" />
+            <button type="submit" class="btn-success">
+                ✅ Confirmar Venta de <span th:text="${cantidad}"></span> unidad(es)
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function aplicarDescuento() {
+        const descuento = document.getElementById('descuentoInput').value;
+        document.getElementById('descuentoHidden').value = descuento || '0';
+        document.querySelector('.discount-section form').submit();
+    }
+</script>
+</body>
+</html>
