@@ -37,7 +37,6 @@ Sistema integral de gestión de inventario y ventas para el negocio de aromatera
 ### Frontend Web
 -  Panel de administración de productos (CRUD)
 -  Punto de venta con escáner de códigos de barras
--  Dashboard de reportes con 4 gráficas interactivas
 -  Búsqueda en tiempo real
 -  Diseño responsive
 -  Compatible con lectores USB de códigos
@@ -51,23 +50,21 @@ Sistema integral de gestión de inventario y ventas para el negocio de aromatera
 - **Java 11**
 - **Spring Boot 2.7.14**
 - **Spring Data JPA** (Hibernate)
-- **Spring Security**
 - **MySQL 8.0**
 - **Maven**
-- **Lombok**
+
 
 ### Frontend Web
 - **HTML5 / CSS3 / JavaScript ES6+**
-- **Chart.js 4.4.0** (Gráficas)
-- **Fetch API** (AJAX)
+- **Thymeleaf ** 
+
 
 
 
 ### DevOps
 - **Git / GitHub**
 - **Travis CI**
-- **JUnit 5 / Mockito**
-- **Docker** (opcional)
+
 
 ---
 
@@ -158,16 +155,6 @@ Abre tu navegador en:
 -  **Inicio:** http://localhost:8080/index.html
 
 - **Punto de Venta:** http://localhost:8080/ventas.html
-
-
-
-
----
-
-
----
-
-
 
 ### Build de producción
 
