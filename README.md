@@ -85,11 +85,14 @@ spring.datasource.username=tu_usuario
 spring.datasource.password=tu_contraseña
 spring.jpa.hibernate.ddl-auto=update
 
-Ejecutar la aplicación
+Ejecutar la aplicación local
 mvn clean package -DskipTests
 java -jar target/aromas-del-alma-*.jar
 
 Acceder desde: http://localhost:8080
+
+Ejecutar la aplicación web
+http://13.219.182.104:8080/
 
  Despliegue en la nube (AWS)
 Instancia EC2: Ubuntu 24.04, tipo t3.micro (Free Tier).
