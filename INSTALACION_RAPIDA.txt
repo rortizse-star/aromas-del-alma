@@ -1,0 +1,145 @@
+═══════════════════════════════════════════════════════
+    🌸 AROMAS DEL ALMA - GUÍA RÁPIDA DE INSTALACIÓN 🌸
+═══════════════════════════════════════════════════════
+
+📱 INSTALACIÓN EN iPAD - 3 PASOS SIMPLES:
+
+┌─────────────────────────────────────────────────────┐
+│  PASO 1: SUBIR A INTERNET (GRATIS)                 │
+└─────────────────────────────────────────────────────┘
+
+Opción A - NETLIFY (Más Fácil):
+  1. Ve a: https://app.netlify.com/drop
+  2. Arrastra la carpeta completa
+  3. ¡Listo! Te da una URL automáticamente
+
+Opción B - GITHUB PAGES:
+  1. Crea cuenta en https://github.com
+  2. Sube los archivos
+  3. Activa GitHub Pages en Settings
+
+
+┌─────────────────────────────────────────────────────┐
+│  PASO 2: INSTALAR EN iPAD                          │
+└─────────────────────────────────────────────────────┘
+
+  1. Abre Safari en el iPad
+  
+  2. Ve a la URL de tu app
+     (la que te dio Netlify o GitHub)
+  
+  3. Toca el botón COMPARTIR 
+     (cuadro con flecha ↑ hacia arriba)
+  
+  4. Selecciona: "Añadir a pantalla de inicio"
+  
+  5. Pon el nombre: "Aromas del Alma"
+  
+  6. ¡LISTO! 🎉
+
+
+┌─────────────────────────────────────────────────────┐
+│  PASO 3: USAR SIN INTERNET                         │
+└─────────────────────────────────────────────────────┘
+
+  ✅ La primera vez necesita internet para instalar
+  
+  ✅ Después funciona COMPLETAMENTE OFFLINE
+  
+  ✅ Todos los datos se guardan en el iPad
+  
+  ✅ No necesitas conexión para vender
+
+
+═══════════════════════════════════════════════════════
+
+🎯 CARACTERÍSTICAS:
+
+  ✓ Sistema de ventas con escáner
+  ✓ Control de inventario
+  ✓ Descuentos en ventas
+  ✓ Reposición de stock
+  ✓ Base de datos local (no se pierden datos)
+  ✓ Funciona sin internet
+  ✓ Gratis para siempre
+
+
+═══════════════════════════════════════════════════════
+
+📝 ARCHIVOS QUE TIENES:
+
+  index.html          - Página principal
+  agregar.html        - Agregar productos
+  app.js             - Lógica de la app
+  db.js              - Base de datos
+  styles.css         - Estilos
+  manifest.json      - Configuración PWA
+  service-worker.js  - Funcionalidad offline ⭐
+  icon-192.png       - Icono pequeño ⭐
+  icon-512.png       - Icono grande ⭐
+
+
+═══════════════════════════════════════════════════════
+
+⚡ USO RÁPIDO:
+
+  VENDER:
+    → Escanea código de barras
+    → Selecciona cantidad
+    → "Agregar al Carrito"
+    → Aplicar descuento (opcional)
+    → "Confirmar Venta"
+  
+  REPONER STOCK:
+    → Escanea código
+    → Botón azul "Sumar al Stock"
+  
+  NUEVO PRODUCTO:
+    → "Agregar Producto"
+    → Llena el formulario
+    → "Guardar"
+
+
+═══════════════════════════════════════════════════════
+
+💡 IMPORTANTE:
+
+  • Usa Safari en iPad (no Chrome)
+  • La URL debe tener HTTPS (por eso usar Netlify/GitHub)
+  • No borres el caché de Safari si usas la app
+  • Cada iPad tiene sus propios datos (no se sincronizan)
+
+
+═══════════════════════════════════════════════════════
+
+🆘 ¿PROBLEMAS?
+
+  "No puedo instalar"
+    → Verifica que uses Safari
+    → La URL debe tener https://
+  
+  "No funciona offline"
+    → Abre la app con internet primero
+    → Cierra y abre de nuevo
+  
+  "Perdí los datos"
+    → No limpies el caché de Safari
+    → Los datos están en el dispositivo
+
+
+═══════════════════════════════════════════════════════
+
+🌐 OPCIONES DE HOSTING GRATIS:
+
+  1. Netlify    → https://app.netlify.com/drop
+  2. GitHub     → https://pages.github.com
+  3. Vercel     → https://vercel.com
+  
+  Todas son GRATIS y PARA SIEMPRE ✨
+
+
+═══════════════════════════════════════════════════════
+
+¡Que disfrutes tu nueva app de ventas! 🌸✨
+
+═══════════════════════════════════════════════════════
